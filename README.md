@@ -1,1 +1,1 @@
-# Intro_boto3
+# Intro_boto3 -- sample and simple python scripts
