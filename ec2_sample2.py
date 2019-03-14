@@ -1,6 +1,6 @@
 
 
-
+import os
 import json
 import boto3
 
@@ -22,6 +22,19 @@ s3meir3 = boto3.resource('s3')
 print()
 
 ec2 = boto3.resource('ec2', region_name='eu-west-1')
+
+# Create key pair
+#key_pair = ec2.KeyPair('boto3_kp')
+ec2_client = boto3.client('ec2', region_name='eu-west-1')
+response = ec2_client.delete_key_pair(KeyName='boto3_kp')
+
+outfile = open('boto3_kp.pem','w')
+key_pair = ec2.create_key_pair(KeyName='boto3_kp')
+KeyPairOut = str(key_pair.key_material)
+outfile.write(KeyPairOut)
+outfile.close()
+os.chmod('boto3_kp.pem', 0o400)
+
 
 # create VPC
 vpc = ec2.create_vpc(CidrBlock='192.168.0.0/16')
@@ -56,9 +69,9 @@ sec_group = ec2.create_security_group(
     GroupName='slice_0', Description='slice_0 sec group', VpcId=vpc.id)
 sec_group.authorize_ingress(
     CidrIp='0.0.0.0/0',
-    IpProtocol='ssh',
-    FromPort=-1,
-    ToPort=-1
+    IpProtocol='tcp',
+    FromPort=22,
+    ToPort=22
 )
 print(sec_group.id)
 
@@ -66,7 +79,9 @@ print(sec_group.id)
 # Create instance
 instances = ec2.create_instances(
     ImageId='ami-07683a44e80cd32c5', InstanceType='t2.micro', MaxCount=1, MinCount=1,
-    NetworkInterfaces=[{'SubnetId': subnet.id, 'DeviceIndex': 0, 'AssociatePublicIpAddress': True, 'Groups': [sec_group.group_id]}])
+    NetworkInterfaces=[{'SubnetId': subnet.id, 'DeviceIndex': 0, 'AssociatePublicIpAddress': True, 'Groups': [sec_group.group_id]}], 
+    KeyName=key_pair.name)
+
 instances[0].wait_until_running()
 print(instances[0].id)
 
