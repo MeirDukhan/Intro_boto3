@@ -47,7 +47,7 @@ ec2 = boto3.resource('ec2', region_name='eu-west-1')
 ec2_client = boto3.client('ec2', region_name='eu-west-1')
 response = ec2_client.delete_key_pair(KeyName='boto3_kp')
 
-# Delete key pair on disk, if exists
+# Delete key pair from disk, if exists
 key_pair_fname = '/Users/meirdu/.ssh/boto3_kp.pem'
 if os.path.exists(key_pair_fname): os.remove(key_pair_fname)
 
