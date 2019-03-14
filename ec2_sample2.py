@@ -1,11 +1,29 @@
 
 
+'''
+boto3 sample and simple creation of resources on an AWS region. 
+Create key pair
+Create VPC
+Create then attach internet gateway
+create a route table and a public route
+create subnet 
+Create sec group
+Create an instance
+
+''' 
+
+
 import os
 import json
 import boto3
+import requests 
 
-# Source https://gist.github.com/nguyendv/8cfd92fc8ed32ebb78e366f44c2daea6
 
+# Sources: 
+#	https://gist.github.com/nguyendv/8cfd92fc8ed32ebb78e366f44c2daea6
+# 	https://sdbrett.com/BrettsITBlog/2016/05/creating-aws-instances-with-boto3/
+#   boto3 documentation 
+# 
 
 #ec2 = boto3.resource('ec2', region_name='eu-west-1')
 #client = boto3.client('ec2')
@@ -23,17 +41,21 @@ print()
 
 ec2 = boto3.resource('ec2', region_name='eu-west-1')
 
-# Delete key pair
+# Delete key pair on AWS region 
 ec2_client = boto3.client('ec2', region_name='eu-west-1')
 response = ec2_client.delete_key_pair(KeyName='boto3_kp')
 
+# Delete key pair on disk, if exists
+key_pair_fname = '/Users/meirdu/.ssh/boto3_kp.pem'
+if os.path.exists(key_pair_fname): os.remove(key_pair_fname)
+
 # Create key pair and save it on disk with 0400 permissions
-outfile = open('~/.ssh/boto3_kp.pem','w')
+outfile = open(key_pair_fname,'w')
 key_pair = ec2.create_key_pair(KeyName='boto3_kp')
 KeyPairOut = str(key_pair.key_material)
 outfile.write(KeyPairOut)
 outfile.close()
-os.chmod('~/.ssh/boto3_kp.pem', 0o400)
+os.chmod(outfile.name, 0o400)
 
 
 # create VPC
@@ -65,10 +87,14 @@ print(subnet.id)
 route_table.associate_with_subnet(SubnetId=subnet.id)
 
 # Create sec group
+r = requests.get('http://ipinfo.io/ip')
+my_ip = r.text.strip()
+CidrIp_Allowed = my_ip + '/32' 
+
 sec_group = ec2.create_security_group(
-    GroupName='slice_0', Description='slice_0 sec group', VpcId=vpc.id)
+    GroupName='boto3_SG', Description='boto3_SG sec group', VpcId=vpc.id)
 sec_group.authorize_ingress(
-    CidrIp='0.0.0.0/0',
+    CidrIp=CidrIp_Allowed,
     IpProtocol='tcp',
     FromPort=22,
     ToPort=22
