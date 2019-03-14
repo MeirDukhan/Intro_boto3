@@ -19,7 +19,7 @@ import boto3
 import requests 
 
 
-# Sources: 
+# Sources & Credits: 
 #	https://gist.github.com/nguyendv/8cfd92fc8ed32ebb78e366f44c2daea6
 # 	https://sdbrett.com/BrettsITBlog/2016/05/creating-aws-instances-with-boto3/
 #   boto3 documentation 
