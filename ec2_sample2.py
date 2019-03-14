@@ -1,14 +1,16 @@
 
 
 '''
-boto3 sample and simple creation of resources on an AWS region. 
-Create key pair
-Create VPC
-Create then attach internet gateway
-create a route table and a public route
-create subnet 
-Create sec group
-Create an instance
+boto3 sample and simple creation of resources in an AWS region. 
+Learning purpose.
+
+	Create key pair and save it on disk 
+	Create VPC
+	Create then attach internet gateway
+	create a route table and a public route
+	create subnet 
+	Create sec group
+	Create an instance
 
 ''' 
 
