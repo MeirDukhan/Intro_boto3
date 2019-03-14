@@ -23,17 +23,17 @@ print()
 
 ec2 = boto3.resource('ec2', region_name='eu-west-1')
 
-# Create key pair
-#key_pair = ec2.KeyPair('boto3_kp')
+# Delete key pair
 ec2_client = boto3.client('ec2', region_name='eu-west-1')
 response = ec2_client.delete_key_pair(KeyName='boto3_kp')
 
-outfile = open('boto3_kp.pem','w')
+# Create key pair and save it on disk with 0400 permissions
+outfile = open('~/.ssh/boto3_kp.pem','w')
 key_pair = ec2.create_key_pair(KeyName='boto3_kp')
 KeyPairOut = str(key_pair.key_material)
 outfile.write(KeyPairOut)
 outfile.close()
-os.chmod('boto3_kp.pem', 0o400)
+os.chmod('~/.ssh/boto3_kp.pem', 0o400)
 
 
 # create VPC
