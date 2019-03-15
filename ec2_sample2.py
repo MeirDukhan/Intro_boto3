@@ -12,6 +12,7 @@ Learning purpose.
 	Create sec group
 	Create an instance
 
+TODO: parametrize. 
 ''' 
 
 
