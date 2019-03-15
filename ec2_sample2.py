@@ -59,6 +59,7 @@ key_pair = ec2.create_key_pair(KeyName='boto3_kp')
 KeyPairOut = str(key_pair.key_material)
 outfile.write(KeyPairOut)
 outfile.close()
+# Change permissions to 400, i.e. read-only for owner
 os.chmod(outfile.name, 0o400)
 
 
@@ -101,11 +102,12 @@ my_ip = r.text.strip()
 
 
 # Create sec group
-# First, build the CIDR we want to allow SSH from 
+# First, build the CIDR we want to allow SSH from. Determine our public IP address on-the-fly. 
 CidrIp_Allowed = my_ip + '/32' 
 
 sec_group = ec2.create_security_group(
     GroupName='boto3_SG', Description='boto3_SG sec group', VpcId=vpc.id)
+
 sec_group.authorize_ingress(
     CidrIp=CidrIp_Allowed,
     IpProtocol='tcp',
@@ -132,12 +134,13 @@ print(instances[0].id)
 # Wait a little bit before trying to get the public IP address.
 # TO Check: Why call to wait_until_running() does not to the trick)
 
-print('Waiting 40 seconds -- to get the public IP')
-import time 
-time.sleep(40)
+#print('Waiting 60 seconds -- to get the public IP')
+#import time 
+#time.sleep(60)
 
 ec2_resource = boto3.resource('ec2', region_name='eu-west-1')
 instance_resource = ec2_resource.Instance(instances[0].id)
 
-print(instance_resource.public_dns_name)
+print("Public IP address: {}".format(instance_resource.public_ip_address))
+
 
