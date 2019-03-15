@@ -49,7 +49,9 @@ response = ec2_client.delete_key_pair(KeyName='boto3_kp')
 
 # Delete key pair from disk, if exists
 key_pair_fname = '/Users/meirdu/.ssh/boto3_kp.pem'
-if os.path.exists(key_pair_fname): os.remove(key_pair_fname)
+if os.path.exists(key_pair_fname): 
+	print('Deleting key pair: {}'.format(key_pair_fname))
+	os.remove(key_pair_fname)
 
 # Create key pair and save it on disk with 0400 permissions
 outfile = open(key_pair_fname,'w')
@@ -67,9 +69,14 @@ vpc.create_tags(Tags=[{"Key": "Name", "Value": "boto3_vpc"}])
 vpc.wait_until_available()
 print(vpc.id)
 
-# create then attach internet gateway
+# Create internet gateway
 ig = ec2.create_internet_gateway()
-vpc.attach_internet_gateway(InternetGatewayId=ig.id)
+
+# To attach VPC to IGW, we can either via a vpc method or an igw method (in comment thereafter)
+# vpc.attach_internet_gateway(InternetGatewayId=ig.id)
+
+# Or, attach IGW to VPC
+ig.attach_to_vpc(VpcId=vpc.id)
 print(ig.id)
 
 
@@ -88,9 +95,13 @@ print(subnet.id)
 # associate the route table with the subnet
 route_table.associate_with_subnet(SubnetId=subnet.id)
 
-# Create sec group
+# Get our public IP so we'll allow SSH connections only from it
 r = requests.get('http://ipinfo.io/ip')
 my_ip = r.text.strip()
+
+
+# Create sec group
+# First, build the CIDR we want to allow SSH from 
 CidrIp_Allowed = my_ip + '/32' 
 
 sec_group = ec2.create_security_group(
@@ -112,4 +123,21 @@ instances = ec2.create_instances(
 
 instances[0].wait_until_running()
 print(instances[0].id)
+
+# To get the Public IP address, we need to access the ec2 instance at the boto3 'resource' level 
+# and (not at 'client' as our just created instance)
+# For a detailed desription of the ec2 instance at 'resource' level, see:
+# 		https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Instance.wait_until_running 
+# 
+# Wait a little bit before trying to get the public IP address.
+# TO Check: Why call to wait_until_running() does not to the trick)
+
+print('Waiting 40 seconds -- to get the public IP')
+import time 
+time.sleep(40)
+
+ec2_resource = boto3.resource('ec2', region_name='eu-west-1')
+instance_resource = ec2_resource.Instance(instances[0].id)
+
+print(instance_resource.public_dns_name)
 
