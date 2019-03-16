@@ -15,12 +15,25 @@ Learning purpose.
 TODO: parametrize. 
 ''' 
 
-
+import sys
 import os
 import json
 import boto3
 import requests 
+import re
 
+print ("This is the name of the script: ", sys.argv[0]) 
+print ("Number of arguments: ", len(sys.argv))
+print ("The arguments are: " , str(sys.argv)) 
+
+
+region = sys.argv[1] 
+if not re.match(r"eu-west-", region):
+	print('Please use region eu-west-1 or eu-west-2')
+	print(sys.argv[0] + ' ' + sys.argv[1])
+	exit(1)
+
+# exit(3)
 
 # Sources & Credits: 
 #	https://gist.github.com/nguyendv/8cfd92fc8ed32ebb78e366f44c2daea6
@@ -42,10 +55,10 @@ s3meir3 = boto3.resource('s3')
 
 print()
 
-ec2 = boto3.resource('ec2', region_name='eu-west-1')
+ec2 = boto3.resource('ec2', region_name=region)
 
 # Delete key pair on AWS region 
-ec2_client = boto3.client('ec2', region_name='eu-west-1')
+ec2_client = boto3.client('ec2', region_name=region)
 response = ec2_client.delete_key_pair(KeyName='boto3_kp')
 
 # Delete key pair from disk, if exists
@@ -139,7 +152,7 @@ print(instances[0].id)
 #import time 
 #time.sleep(60)
 
-ec2_resource = boto3.resource('ec2', region_name='eu-west-1')
+ec2_resource = boto3.resource('ec2', region_name=region)
 instance_resource = ec2_resource.Instance(instances[0].id)
 
 print("Public IP address: {}".format(instance_resource.public_ip_address))
