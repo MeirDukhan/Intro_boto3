@@ -26,14 +26,25 @@ print ("This is the name of the script: ", sys.argv[0])
 print ("Number of arguments: ", len(sys.argv))
 print ("The arguments are: " , str(sys.argv)) 
 
+#import argparse
+#parser = argparse.ArgumentParser(description="Misc parameters")
+#parser.add_argument("-r", "--region", help="AWS region. ", choices=['eu-west-1', 'eu-west-2'])
+#parser.add_argument("-k", "--keypair", help="Key pair name", action='append', default=['boto3_kp'])
+#args = parser.parse_args()
+#print(args)
 
 region = sys.argv[1] 
-if not re.match(r"eu-west-", region):
-	print('Please use region eu-west-1 or eu-west-2')
-	print(sys.argv[0] + ' ' + sys.argv[1])
+#if not re.match(r"eu-west-", region):
+#	print('Please use region eu-west-1 or eu-west-2')
+#	print(sys.argv[0] + ' ' + sys.argv[1])
+#	exit(1)
+
+if region != 'eu-west-1': 
+	print('Please use region eu-west-1')
+	print(sys.argv[0] + ' ' + 'eu-west-1')
 	exit(1)
 
-# exit(3)
+#exit(3)
 
 # Sources & Credits: 
 #	https://gist.github.com/nguyendv/8cfd92fc8ed32ebb78e366f44c2daea6
@@ -130,7 +141,7 @@ sec_group.authorize_ingress(
 )
 print(sec_group.id)
 
-# find image id ami-07683a44e80cd32c5 / eu-west-1
+# Find an image id in eu-west-1: ami-07683a44e80cd32c5 -- WARNING won't work in a region different than eu-west-1.  
 # Create instance
 instances = ec2.create_instances(
     ImageId='ami-07683a44e80cd32c5', InstanceType='t2.micro', MaxCount=1, MinCount=1,
@@ -140,17 +151,12 @@ instances = ec2.create_instances(
 instances[0].wait_until_running()
 print(instances[0].id)
 
+#
 # To get the Public IP address, we need to access the ec2 instance at the boto3 'resource' level 
 # and (not at 'client' as our just created instance)
 # For a detailed desription of the ec2 instance at 'resource' level, see:
 # 		https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Instance.wait_until_running 
 # 
-# Wait a little bit before trying to get the public IP address.
-# TO Check: Why call to wait_until_running() does not to the trick)
-
-#print('Waiting 60 seconds -- to get the public IP')
-#import time 
-#time.sleep(60)
 
 ec2_resource = boto3.resource('ec2', region_name=region)
 instance_resource = ec2_resource.Instance(instances[0].id)
